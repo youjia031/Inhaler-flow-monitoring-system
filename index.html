@@ -3,168 +3,325 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>吸入器流量監測系統 · 入口</title>
-    <!-- Font Awesome 6 (免費) -->
+    <title>吸入器流量監測 · 入口</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
         }
-
         body {
             background: linear-gradient(145deg, #f0f4f8 0%, #e6ecf3 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 2rem 1.5rem;
         }
+        .app-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
 
+        /* ===== 主卡片 ===== */
         .login-card {
-            max-width: 1000px;
             width: 100%;
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 48px;
-            padding: 2.8rem 2.8rem 2.8rem 2.8rem;
+            padding: 2.2rem 2.5rem 2rem;
             box-shadow: 0 30px 60px -20px rgba(0, 20, 40, 0.4),
                         0 0 0 1px rgba(255, 255, 255, 0.6) inset;
-            transition: all 0.2s ease;
         }
 
-        /* header */
+        /* ===== 標題列 ===== */
         .app-header {
             display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            margin-bottom: 2.5rem;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.8rem;
         }
-
+        .app-header .left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
         .app-header h1 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 600;
             color: #0b2b44;
-            letter-spacing: -0.02em;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
-
         .app-header h1 i {
             color: #1f6e8c;
-            font-size: 2rem;
+            font-size: 1.8rem;
         }
-
         .app-header .sub {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #4a5f73;
-            font-weight: 400;
-            margin-left: 4px;
-            border-left: 3px solid #8ba0b5;
-            padding-left: 16px;
+            padding-left: 4px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .header-actions button {
+            padding: 8px 18px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-add-folder {
+            background: #e8edf3;
+            color: #1f4e79;
+        }
+        .btn-add-folder:hover {
+            background: #d5dee8;
+        }
+        .btn-add-link {
+            background: #1f4e79;
+            color: white;
+        }
+        .btn-add-link:hover {
+            background: #163d5e;
+        }
+        .btn-reset {
+            background: #f0f0f0;
+            color: #7a8a9a;
+        }
+        .btn-reset:hover {
+            background: #e0e0e0;
         }
 
-        /* 工具網格 */
+        /* ===== 工具網格 (支援資料夾) ===== */
         .tool-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0 1.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            margin: 1.5rem 0 1.5rem;
         }
 
-        .tool-card {
+        /* ===== 資料夾 ===== */
+        .folder {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 16px 18px 14px;
+            border: 1px solid rgba(200, 212, 225, 0.3);
+        }
+        .folder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .folder-header .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .folder-header .folder-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a2e3f;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 2px 8px;
+            border-radius: 6px;
+            min-width: 60px;
+        }
+        .folder-header .folder-name:hover {
+            background: rgba(0,0,0,0.04);
+        }
+        .folder-header .folder-name:focus {
             background: white;
-            border-radius: 28px;
-            padding: 1.8rem 1.2rem 1.5rem 1.2rem;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0,20,40,0.04);
-            border: 1px solid rgba(200, 212, 225, 0.4);
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            box-shadow: 0 0 0 2px #1f4e79;
+        }
+        .folder-header .folder-count {
+            font-size: 13px;
+            color: #7a8a9a;
+            margin-left: 4px;
+        }
+        .folder-header .folder-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .folder-header .folder-actions button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #8a9aa8;
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: 0.15s;
+        }
+        .folder-header .folder-actions button:hover {
+            background: rgba(0,0,0,0.06);
+            color: #1f4e79;
+        }
+        .folder-header .folder-actions .del-folder:hover {
+            color: #c0392b;
+        }
+        .folder-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .folder-body .tool-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.2rem 1rem 1rem;
+            border: 1px solid rgba(200, 212, 225, 0.35);
+            transition: 0.2s;
             text-decoration: none;
             color: #1a2e3f;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
             position: relative;
         }
-
-        .tool-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 35px -8px rgba(18, 52, 77, 0.15);
+        .folder-body .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px -8px rgba(18, 52, 77, 0.12);
             border-color: #b8cedf;
-            background: #fbfdff;
         }
 
+        /* ===== 一般卡片（未分類） ===== */
+        .uncategorized {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .uncategorized .tool-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.2rem 1rem 1rem;
+            border: 1px solid rgba(200, 212, 225, 0.35);
+            transition: 0.2s;
+            text-decoration: none;
+            color: #1a2e3f;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .uncategorized .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px -8px rgba(18, 52, 77, 0.12);
+            border-color: #b8cedf;
+        }
+
+        /* ===== 卡片內容 ===== */
         .tool-card .icon {
-            font-size: 2.4rem;
+            font-size: 1.8rem;
             color: #1f6e8c;
             background: #e3edf5;
-            width: 56px;
-            height: 56px;
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 20px;
+            border-radius: 16px;
             margin-bottom: 8px;
         }
-
-        .tool-card h3 {
-            font-size: 1.35rem;
+        .tool-card .card-name {
+            font-size: 1.05rem;
             font-weight: 600;
-            letter-spacing: -0.01em;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: 100%;
             color: #0b2b44;
         }
-
-        .tool-card p {
-            font-size: 0.9rem;
-            color: #5a6f82;
-            line-height: 1.4;
-            margin: 0;
-            flex: 1;
+        .tool-card .card-name:hover {
+            background: rgba(0,0,0,0.04);
         }
-
-        .tool-card .badge {
-            background: #eef3f8;
-            color: #1f5a78;
+        .tool-card .card-name:focus {
+            background: white;
+            box-shadow: 0 0 0 2px #1f4e79;
+        }
+        .tool-card .card-url {
             font-size: 0.7rem;
-            font-weight: 600;
-            padding: 0.2rem 0.8rem;
-            border-radius: 30px;
-            letter-spacing: 0.02em;
-            margin-top: 0.3rem;
-            text-transform: uppercase;
+            color: #8a9aa8;
+            margin: 2px 0 6px;
+            word-break: break-all;
+            padding: 0 6px;
+            background: transparent;
+            border: none;
+            outline: none;
+            border-radius: 4px;
         }
-
-        .tool-card .arrow {
-            align-self: flex-end;
-            color: #8aa3b9;
-            font-size: 1.1rem;
-            transition: 0.2s;
+        .tool-card .card-url:hover {
+            background: rgba(0,0,0,0.03);
         }
-
-        .tool-card:hover .arrow {
+        .tool-card .card-url:focus {
+            background: white;
+            box-shadow: 0 0 0 2px #1f4e79;
+        }
+        .tool-card .card-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            justify-content: flex-end;
+        }
+        .tool-card .card-actions button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #8a9aa8;
+            font-size: 13px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            transition: 0.15s;
+        }
+        .tool-card .card-actions button:hover {
+            background: rgba(0,0,0,0.06);
+        }
+        .tool-card .card-actions .del-card:hover {
+            color: #c0392b;
+        }
+        .tool-card .card-actions .open-link {
             color: #1f6e8c;
-            transform: translateX(4px);
+            font-weight: 600;
+        }
+        .tool-card .card-actions .open-link:hover {
+            background: #e3edf5;
         }
 
-        /* 狀態 / 底部 */
+        /* ===== 無資料提示 ===== */
+        .empty-hint {
+            color: #8a9aa8;
+            font-size: 14px;
+            padding: 20px 0 10px;
+            text-align: center;
+        }
+
+        /* ===== 底部 ===== */
         .footer-note {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             padding-top: 1.2rem;
             border-top: 1px solid rgba(160, 184, 204, 0.25);
             color: #4b657b;
             font-size: 0.9rem;
         }
-
         .footer-note .status-dot {
             display: inline-block;
             width: 10px;
@@ -174,142 +331,549 @@
             margin-right: 8px;
             box-shadow: 0 0 0 2px rgba(61, 153, 112, 0.2);
         }
-
-        .footer-note i {
-            margin-right: 6px;
-            color: #578197;
+        .footer-note .badge-version {
+            background: #eef3f8;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #4a5f73;
         }
 
-        /* Responsive */
-        @media (max-width: 640px) {
-            .login-card {
-                padding: 1.8rem 1.2rem;
-                border-radius: 32px;
-            }
-            .app-header h1 {
-                font-size: 1.6rem;
-                flex-wrap: wrap;
-            }
-            .app-header .sub {
-                font-size: 0.9rem;
-                border-left: none;
-                padding-left: 0;
-                margin-left: 0;
-            }
-            .tool-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 1rem;
-            }
-            .tool-card {
-                padding: 1.2rem 0.8rem;
-            }
-            .tool-card .icon {
-                width: 44px;
-                height: 44px;
-                font-size: 1.8rem;
-            }
-            .tool-card h3 {
-                font-size: 1.1rem;
-            }
+        /* ===== Modal ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 28px;
+            padding: 2rem 2.2rem;
+            max-width: 460px;
+            width: 92%;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+        }
+        .modal-box h3 {
+            font-size: 1.3rem;
+            color: #0b2b44;
+            margin-bottom: 6px;
+        }
+        .modal-box .sub {
+            color: #7a8a9a;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+        .modal-box label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #2c3e50;
+            display: block;
+            margin-top: 12px;
+        }
+        .modal-box input, .modal-box select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #d0d8e0;
+            font-size: 14px;
+            margin-top: 4px;
+            outline: none;
+            transition: 0.15s;
+        }
+        .modal-box input:focus, .modal-box select:focus {
+            border-color: #1f4e79;
+            box-shadow: 0 0 0 3px rgba(31,78,121,0.1);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-actions button {
+            padding: 8px 24px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-actions .btn-cancel {
+            background: #f0f0f0;
+            color: #5a6a7a;
+        }
+        .modal-actions .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+        .modal-actions .btn-confirm {
+            background: #1f4e79;
+            color: white;
+        }
+        .modal-actions .btn-confirm:hover {
+            background: #163d5e;
         }
 
-        @media (max-width: 420px) {
-            .tool-grid {
-                grid-template-columns: 1fr;
-            }
+        /* ===== 響應式 ===== */
+        @media (max-width: 700px) {
+            .login-card { padding: 1.5rem 1.2rem; border-radius: 32px; }
+            .app-header { flex-direction: column; align-items: stretch; gap: 12px; }
+            .header-actions { justify-content: flex-start; }
+            .app-header h1 { font-size: 1.5rem; }
+            .folder-body { grid-template-columns: 1fr 1fr; }
+            .uncategorized { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 440px) {
+            .folder-body { grid-template-columns: 1fr; }
+            .uncategorized { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+<div class="app-wrapper">
 
-<div class="login-card" role="main">
-
-    <!-- 頁首 -->
+<div class="login-card" id="appRoot">
+    <!-- ===== 標題列 ===== -->
     <div class="app-header">
-        <h1>
-            <i class="fas fa-lungs" aria-hidden="true"></i>
-            吸入器流量監測 · 入口
-        </h1>
-        <div class="sub">
-            <i class="fas fa-microchip" style="margin-right: 6px; opacity:0.7;"></i>
-            聲學氣流可視化 · 四個工具集中存取
+        <div class="left">
+            <h1><i class="fas fa-lungs"></i> 吸入器流量監測 · 入口</h1>
+            <span class="sub"><i class="fas fa-microchip" style="margin-right:6px;opacity:0.7;"></i>聲學氣流可視化 · 可自訂分類</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-add-folder" onclick="App.addFolder()"><i class="fas fa-folder-plus"></i> 新增分類</button>
+            <button class="btn-add-link" onclick="App.addLink()"><i class="fas fa-plus-circle"></i> 新增視窗</button>
+            <button class="btn-reset" onclick="App.resetAll()" title="還原為預設"><i class="fas fa-undo-alt"></i></button>
         </div>
     </div>
 
-    <!-- 四大工具卡片 -->
-    <div class="tool-grid">
-
-        <!-- 1. Inhaler Flow Monitor (基礎版) -->
-        <a href="https://inhaler-flow.vercel.app/" target="_blank" rel="noopener noreferrer" class="tool-card">
-            <div class="icon"><i class="fas fa-chart-line"></i></div>
-            <h3>基礎流量監測</h3>
-            <p>即時流量波形 · 理想目標曲線</p>
-            <span class="badge"><i class="far fa-clock" style="margin-right: 4px;"></i> V1.2</span>
-            <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-        </a>
-
-        <!-- 2. 肺部沉積 (Respimat) -->
-        <a href="https://respimat.vercel.app/" target="_blank" rel="noopener noreferrer" class="tool-card">
-            <div class="icon"><i class="fas fa-wind"></i></div>
-            <h3>Respimat 沉積</h3>
-            <p>FFT 冪律模型 · 高頻能量分析</p>
-            <span class="badge"><i class="fas fa-cog" style="margin-right: 4px;"></i> 無 ML</span>
-            <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-        </a>
-
-        <!-- 3. 肺部沉積 (Turbuhaler) -->
-        <a href="https://trubuhaler.vercel.app/" target="_blank" rel="noopener noreferrer" class="tool-card">
-            <div class="icon"><i class="fas fa-lungs-v"></i></div>
-            <h3>Turbuhaler 沉積</h3>
-            <p>BUDLD 模型 · 肺部圖示填色</p>
-            <span class="badge"><i class="fas fa-calculator"></i> Eq 2.9</span>
-            <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-        </a>
-
-        <!-- 4. 流量監測 (進階版) -->
-        <a href="https://fictional-invention-jet.vercel.app/" target="_blank" rel="noopener noreferrer" class="tool-card">
-            <div class="icon"><i class="fas fa-wave-square"></i></div>
-            <h3>進階流量監測</h3>
-            <p>增強濾波 · 滑動視窗多數決</p>
-            <span class="badge"><i class="fas fa-filter"></i> 降噪</span>
-            <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-        </a>
-
+    <!-- ===== 工具區域（由 JavaScript 動態渲染） ===== -->
+    <div id="toolContainer">
+        <!-- 內容由 render() 產生 -->
     </div>
 
-    <!-- 底部資訊 -->
+    <!-- ===== 底部 ===== -->
     <div class="footer-note">
-        <span>
-            <span class="status-dot"></span>
-            系統就緒 · 點擊卡片開啟工具
-        </span>
+        <span><span class="status-dot"></span> 點擊名稱可重新命名 · 拖曳排序 (開發中)</span>
         <span>
             <i class="fas fa-shield-alt"></i>
-            每個工具獨立運行
-            <i class="fas fa-arrow-right" style="margin-left: 10px; opacity:0.5;"></i>
-            <span style="margin-left: 6px; font-weight: 300; color: #3b5e77;">vercel 部署</span>
+            資料儲存於瀏覽器
+            <span class="badge-version">v2.0</span>
         </span>
     </div>
-
 </div>
 
-<!-- 極簡腳本：無侵入，僅作視覺提示 (可省略) -->
-<script>
-    (function() {
-        // 卡片點擊時可增加微量回饋 (不影響連結行為)
-        const cards = document.querySelectorAll('.tool-card');
-        cards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                // 純粹視覺點擊回饋 (不干擾導航)
-                this.style.transition = 'transform 0.1s';
-                this.style.transform = 'scale(0.97)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 100);
-            });
-        });
-    })();
-</script>
+<!-- ===== Modal (新增視窗 / 分類) ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <h3 id="modalTitle">新增視窗</h3>
+        <div class="sub" id="modalSub">請輸入名稱與網址</div>
+        <label>名稱</label>
+        <input id="modalName" placeholder="例如：基礎流量監測" />
+        <label>網址 (URL)</label>
+        <input id="modalUrl" placeholder="https://example.com" />
+        <label>分類 (可選)</label>
+        <select id="modalFolder"><option value="">— 不分類 —</option></select>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="App.closeModal()">取消</button>
+            <button class="btn-confirm" id="modalConfirmBtn" onclick="App.confirmModal()">新增</button>
+        </div>
+    </div>
+</div>
 
+<script>
+// ============================================================
+//  App 核心 — 所有功能都在這裡，不更動「原始卡片」的邏輯
+// ============================================================
+const App = {
+    // ----- 儲存結構 -----
+    data: {
+        folders: {
+            // "流量監測": { name: "流量監測", items: [ { id, name, url, icon } ] }
+        },
+        uncategorized: [
+            // { id, name, url, icon }
+        ],
+        nextId: 1,
+    },
+
+    // ----- 預設資料（還原用） -----
+    defaultData: null,
+
+    // ----- 初始化 -----
+    init() {
+        // 載入 localStorage
+        const saved = localStorage.getItem('inhaler_portal_data');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                this.data = parsed;
+                // 確保 nextId 存在
+                if (!this.data.nextId) this.data.nextId = 1;
+                // 確保 folders 存在
+                if (!this.data.folders) this.data.folders = {};
+                if (!this.data.uncategorized) this.data.uncategorized = [];
+            } catch(e) {
+                console.warn('讀取儲存失敗，使用預設值');
+                this.setDefaultData();
+            }
+        } else {
+            this.setDefaultData();
+        }
+
+        // 儲存一份預設值供還原用
+        this.defaultData = JSON.parse(JSON.stringify(this.data));
+
+        this.render();
+        this.updateModalFolderSelect();
+    },
+
+    // ----- 預設資料（您原本的四個網頁） -----
+    setDefaultData() {
+        this.data = {
+            folders: {
+                "流量監測": {
+                    name: "流量監測",
+                    items: [
+                        { id: this._nextId(), name: "基礎流量監測", url: "https://inhaler-flow.vercel.app/", icon: "chart-line" },
+                        { id: this._nextId(), name: "進階流量監測", url: "https://fictional-invention-jet.vercel.app/", icon: "wave-square" },
+                    ]
+                },
+                "肺部沉積": {
+                    name: "肺部沉積",
+                    items: [
+                        { id: this._nextId(), name: "Respimat 沉積", url: "https://respimat.vercel.app/", icon: "wind" },
+                        { id: this._nextId(), name: "Turbuhaler 沉積", url: "https://trubuhaler.vercel.app/", icon: "lungs-v" },
+                    ]
+                }
+            },
+            uncategorized: [],
+            nextId: this.data?.nextId || 5,
+        };
+        if (!this.data.nextId) this.data.nextId = 5;
+    },
+
+    _nextId() {
+        return this.data.nextId++;
+    },
+
+    // ----- 儲存 -----
+    save() {
+        localStorage.setItem('inhaler_portal_data', JSON.stringify(this.data));
+    },
+
+    // ----- 渲染 -----
+    render() {
+        const container = document.getElementById('toolContainer');
+        const data = this.data;
+        let html = '';
+
+        // 資料夾
+        const folderNames = Object.keys(data.folders);
+        if (folderNames.length > 0) {
+            for (const key of folderNames) {
+                const folder = data.folders[key];
+                html += this._renderFolder(folder);
+            }
+        }
+
+        // 未分類
+        if (data.uncategorized.length > 0) {
+            html += `
+                <div class="folder">
+                    <div class="folder-header">
+                        <div class="left">
+                            <span style="font-size:1.1rem;font-weight:600;color:#1a2e3f;">📂 未分類</span>
+                            <span class="folder-count">(${data.uncategorized.length})</span>
+                        </div>
+                    </div>
+                    <div class="uncategorized">
+                        ${data.uncategorized.map(item => this._renderCard(item, null)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 完全空白
+        if (folderNames.length === 0 && data.uncategorized.length === 0) {
+            html = `<div class="empty-hint"><i class="fas fa-plus-circle" style="font-size:2rem;color:#c0d0dc;display:block;margin-bottom:8px;"></i>點擊「新增視窗」或「新增分類」開始建立您的工具集</div>`;
+        }
+
+        container.innerHTML = html;
+        this.save();
+        this.updateModalFolderSelect();
+    },
+
+    // ----- 渲染單一資料夾 -----
+    _renderFolder(folder) {
+        const key = folder.name;
+        const count = folder.items.length;
+        return `
+            <div class="folder" data-folder="${key}">
+                <div class="folder-header">
+                    <div class="left">
+                        <span style="font-size:1.2rem;">📁</span>
+                        <input class="folder-name" value="${this._escape(key)}" 
+                               onchange="App.renameFolder('${this._escape(key)}', this.value)" 
+                               onfocus="this.select()" />
+                        <span class="folder-count">(${count})</span>
+                    </div>
+                    <div class="folder-actions">
+                        <button onclick="App.addLinkToFolder('${this._escape(key)}')" title="在此分類新增視窗"><i class="fas fa-plus"></i></button>
+                        <button class="del-folder" onclick="App.deleteFolder('${this._escape(key)}')" title="刪除分類（內容移至未分類）"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+                <div class="folder-body">
+                    ${folder.items.map(item => this._renderCard(item, key)).join('')}
+                    ${folder.items.length === 0 ? '<div style="color:#b0c0cc;font-size:13px;padding:12px 0;grid-column:1/-1;text-align:center;">此分類尚無項目</div>' : ''}
+                </div>
+            </div>
+        `;
+    },
+
+    // ----- 渲染單一卡片 -----
+    _renderCard(item, folderKey) {
+        const icon = item.icon || 'globe';
+        return `
+            <div class="tool-card" data-id="${item.id}" data-folder="${folderKey || ''}">
+                <div class="icon"><i class="fas fa-${icon}"></i></div>
+                <input class="card-name" value="${this._escape(item.name)}" 
+                       onchange="App.renameItem(${item.id}, this.value)" 
+                       onfocus="this.select()" />
+                <input class="card-url" value="${this._escape(item.url)}" 
+                       onchange="App.updateUrl(${item.id}, this.value)" 
+                       onfocus="this.select()" placeholder="網址..." />
+                <div class="card-actions">
+                    <button class="open-link" onclick="App.openLink(${item.id})" title="在新分頁開啟"><i class="fas fa-external-link-alt"></i> 開啟</button>
+                    <button class="del-card" onclick="App.deleteItem(${item.id})" title="刪除"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+        `;
+    },
+
+    // ----- 工具函式 -----
+    _escape(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    },
+
+    // ----- 取得項目（不論在哪） -----
+    _findItem(id) {
+        // 檢查 uncategorized
+        let idx = this.data.uncategorized.findIndex(i => i.id === id);
+        if (idx !== -1) return { location: 'uncategorized', index: idx, item: this.data.uncategorized[idx] };
+        // 檢查 folders
+        for (const key of Object.keys(this.data.folders)) {
+            const folder = this.data.folders[key];
+            const i = folder.items.findIndex(it => it.id === id);
+            if (i !== -1) return { location: 'folder', folderKey: key, index: i, item: folder.items[i] };
+        }
+        return null;
+    },
+
+    // ----- 新增視窗（彈窗） -----
+    addLink() {
+        this._openModal('新增視窗', '請輸入名稱與網址', 'link');
+    },
+
+    addLinkToFolder(folderKey) {
+        this._openModal(`新增視窗至「${folderKey}」`, '請輸入名稱與網址', 'link', folderKey);
+    },
+
+    // ----- 新增分類 -----
+    addFolder() {
+        this._openModal('新增分類', '請輸入分類名稱', 'folder');
+    },
+
+    // ----- 開啟 Modal -----
+    _openModal(title, sub, mode, folderKey) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalSub').textContent = sub;
+        document.getElementById('modalName').value = '';
+        document.getElementById('modalUrl').value = '';
+        document.getElementById('modalUrl').style.display = (mode === 'folder') ? 'none' : 'block';
+        document.querySelector('label[for="modalUrl"]').style.display = (mode === 'folder') ? 'none' : 'block';
+        // 分類下拉選單
+        this.updateModalFolderSelect(folderKey);
+        document.getElementById('modalOverlay').classList.add('active');
+        // 儲存模式
+        this._modalMode = mode;
+        this._modalFolderKey = folderKey || null;
+        document.getElementById('modalConfirmBtn').textContent = (mode === 'folder') ? '建立分類' : '新增';
+        setTimeout(() => document.getElementById('modalName').focus(), 100);
+    },
+
+    updateModalFolderSelect(selected) {
+        const sel = document.getElementById('modalFolder');
+        const current = sel.value;
+        sel.innerHTML = '<option value="">— 不分類 —</option>';
+        for (const key of Object.keys(this.data.folders)) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = key;
+            sel.appendChild(opt);
+        }
+        if (selected) sel.value = selected;
+        else if (current && this.data.folders[current]) sel.value = current;
+    },
+
+    closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+    },
+
+    confirmModal() {
+        const name = document.getElementById('modalName').value.trim();
+        const url = document.getElementById('modalUrl').value.trim();
+        const folder = document.getElementById('modalFolder').value;
+
+        if (!name) { alert('請輸入名稱'); return; }
+
+        if (this._modalMode === 'folder') {
+            // 新增分類
+            if (this.data.folders[name]) {
+                alert(`分類「${name}」已存在`);
+                return;
+            }
+            this.data.folders[name] = { name: name, items: [] };
+            this.save();
+            this.render();
+            this.closeModal();
+            return;
+        }
+
+        // 新增視窗
+        if (!url) { alert('請輸入網址'); return; }
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            alert('請輸入有效的網址 (需以 http:// 或 https:// 開頭)');
+            return;
+        }
+
+        const newItem = {
+            id: this._nextId(),
+            name: name,
+            url: url,
+            icon: 'globe',
+        };
+
+        if (folder && this.data.folders[folder]) {
+            this.data.folders[folder].items.push(newItem);
+        } else {
+            this.data.uncategorized.push(newItem);
+        }
+
+        this.save();
+        this.render();
+        this.closeModal();
+    },
+
+    // ----- 重新命名 -----
+    renameItem(id, newName) {
+        const found = this._findItem(id);
+        if (!found) return;
+        if (!newName.trim()) { alert('名稱不能為空'); this.render(); return; }
+        found.item.name = newName.trim();
+        this.save();
+        this.render();
+    },
+
+    renameFolder(oldKey, newKey) {
+        if (!newKey.trim()) { alert('名稱不能為空'); this.render(); return; }
+        if (newKey !== oldKey && this.data.folders[newKey]) {
+            alert(`分類「${newKey}」已存在`);
+            this.render();
+            return;
+        }
+        const folder = this.data.folders[oldKey];
+        if (!folder) return;
+        delete this.data.folders[oldKey];
+        folder.name = newKey.trim();
+        this.data.folders[newKey.trim()] = folder;
+        this.save();
+        this.render();
+    },
+
+    // ----- 更新網址 -----
+    updateUrl(id, newUrl) {
+        const found = this._findItem(id);
+        if (!found) return;
+        if (!newUrl.trim()) { alert('網址不能為空'); this.render(); return; }
+        if (!newUrl.startsWith('http://') && !newUrl.startsWith('https://')) {
+            alert('請輸入有效的網址 (需以 http:// 或 https:// 開頭)');
+            this.render();
+            return;
+        }
+        found.item.url = newUrl.trim();
+        this.save();
+        this.render();
+    },
+
+    // ----- 刪除 -----
+    deleteItem(id) {
+        if (!confirm('確定要刪除這個項目嗎？')) return;
+        const found = this._findItem(id);
+        if (!found) return;
+        if (found.location === 'uncategorized') {
+            this.data.uncategorized.splice(found.index, 1);
+        } else {
+            this.data.folders[found.folderKey].items.splice(found.index, 1);
+        }
+        this.save();
+        this.render();
+    },
+
+    deleteFolder(key) {
+        if (!confirm(`確定要刪除分類「${key}」嗎？\n裡面的項目將移到「未分類」。`)) return;
+        const folder = this.data.folders[key];
+        if (!folder) return;
+        // 將項目移到未分類
+        for (const item of folder.items) {
+            this.data.uncategorized.push(item);
+        }
+        delete this.data.folders[key];
+        this.save();
+        this.render();
+    },
+
+    // ----- 開啟連結 -----
+    openLink(id) {
+        const found = this._findItem(id);
+        if (!found) return;
+        window.open(found.item.url, '_blank');
+    },
+
+    // ----- 還原預設 -----
+    resetAll() {
+        if (!confirm('確定要還原為預設設定嗎？\n您所有的自訂項目將會遺失！')) return;
+        this.setDefaultData();
+        this.save();
+        this.render();
+        this.updateModalFolderSelect();
+    },
+
+    // ----- 關閉 Modal（點擊外部） -----
+    _setupModalClose() {
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) this.closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.closeModal();
+        });
+    },
+};
+
+// ============================================================
+//  啟動
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+    App._setupModalClose();
+});
+</script>
+</div>
 </body>
 </html>

@@ -6,6 +6,7 @@
     <title>吸入器流量監測 · 入口</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
+        /* ===== 樣式 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -21,8 +22,6 @@
             max-width: 1100px;
             margin: 0 auto;
         }
-
-        /* ===== 主卡片 ===== */
         .login-card {
             width: 100%;
             background: rgba(255, 255, 255, 0.85);
@@ -33,8 +32,6 @@
             box-shadow: 0 30px 60px -20px rgba(0, 20, 40, 0.4),
                         0 0 0 1px rgba(255, 255, 255, 0.6) inset;
         }
-
-        /* ===== 標題列 ===== */
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -102,16 +99,19 @@
         .btn-reset:hover {
             background: #e0e0e0;
         }
-
-        /* ===== 工具網格 (支援資料夾) ===== */
+        .btn-clear-storage {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+        .btn-clear-storage:hover {
+            background: #fcd5d5;
+        }
         .tool-grid {
             display: flex;
             flex-direction: column;
             gap: 1.8rem;
             margin: 1.5rem 0 1.5rem;
         }
-
-        /* ===== 資料夾 ===== */
         .folder {
             background: rgba(255, 255, 255, 0.5);
             border-radius: 24px;
@@ -197,8 +197,6 @@
             box-shadow: 0 12px 28px -8px rgba(18, 52, 77, 0.12);
             border-color: #b8cedf;
         }
-
-        /* ===== 一般卡片（未分類） ===== */
         .uncategorized {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -221,8 +219,6 @@
             box-shadow: 0 12px 28px -8px rgba(18, 52, 77, 0.12);
             border-color: #b8cedf;
         }
-
-        /* ===== 卡片內容 ===== */
         .tool-card .icon {
             font-size: 1.8rem;
             color: #1f6e8c;
@@ -300,16 +296,12 @@
         .tool-card .card-actions .open-link:hover {
             background: #e3edf5;
         }
-
-        /* ===== 無資料提示 ===== */
         .empty-hint {
             color: #8a9aa8;
             font-size: 14px;
             padding: 20px 0 10px;
             text-align: center;
         }
-
-        /* ===== 底部 ===== */
         .footer-note {
             display: flex;
             justify-content: space-between;
@@ -421,7 +413,24 @@
             background: #163d5e;
         }
 
-        /* ===== 響應式 ===== */
+        /* ===== 修復通知 ===== */
+        .fix-notice {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 16px;
+            color: #856404;
+            font-size: 14px;
+            display: none;
+        }
+        .fix-notice.show {
+            display: block;
+        }
+        .fix-notice strong {
+            color: #856404;
+        }
+
         @media (max-width: 700px) {
             .login-card { padding: 1.5rem 1.2rem; border-radius: 32px; }
             .app-header { flex-direction: column; align-items: stretch; gap: 12px; }
@@ -440,7 +449,7 @@
 <div class="app-wrapper">
 
 <div class="login-card" id="appRoot">
-    <!-- ===== 標題列 ===== -->
+    <!-- 標題列 -->
     <div class="app-header">
         <div class="left">
             <h1><i class="fas fa-lungs"></i> 吸入器流量監測 · 入口</h1>
@@ -450,33 +459,37 @@
             <button class="btn-add-folder" onclick="App.addFolder()"><i class="fas fa-folder-plus"></i> 新增分類</button>
             <button class="btn-add-link" onclick="App.addLink()"><i class="fas fa-plus-circle"></i> 新增視窗</button>
             <button class="btn-reset" onclick="App.resetAll()" title="還原為預設"><i class="fas fa-undo-alt"></i></button>
+            <button class="btn-clear-storage" onclick="App.clearStorage()" title="清除所有儲存資料（修復用）"><i class="fas fa-broom"></i> 修復</button>
         </div>
     </div>
 
-    <!-- ===== 工具區域（由 JavaScript 動態渲染） ===== -->
-    <div id="toolContainer">
-        <!-- 內容由 render() 產生 -->
+    <!-- 修復通知 -->
+    <div class="fix-notice" id="fixNotice">
+        <strong>🔄 已自動修復儲存資料</strong> — 因儲存格式不相容，已重置為預設值。您可以重新開始新增項目。
     </div>
 
-    <!-- ===== 底部 ===== -->
+    <!-- 工具區域 -->
+    <div id="toolContainer"></div>
+
+    <!-- 底部 -->
     <div class="footer-note">
-        <span><span class="status-dot"></span> 點擊名稱可重新命名 · 拖曳排序 (開發中)</span>
+        <span><span class="status-dot"></span> 點擊名稱可重新命名</span>
         <span>
             <i class="fas fa-shield-alt"></i>
             資料儲存於瀏覽器
-            <span class="badge-version">v2.0</span>
+            <span class="badge-version">v2.2</span>
         </span>
     </div>
 </div>
 
-<!-- ===== Modal (新增視窗 / 分類) ===== -->
+<!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <h3 id="modalTitle">新增視窗</h3>
         <div class="sub" id="modalSub">請輸入名稱與網址</div>
         <label>名稱</label>
         <input id="modalName" placeholder="例如：基礎流量監測" />
-        <label>網址 (URL)</label>
+        <label id="urlLabel">網址 (URL)</label>
         <input id="modalUrl" placeholder="https://example.com" />
         <label>分類 (可選)</label>
         <select id="modalFolder"><option value="">— 不分類 —</option></select>
@@ -489,101 +502,111 @@
 
 <script>
 // ============================================================
-//  App 核心 — 所有功能都在這裡，不更動「原始卡片」的邏輯
+//  App 核心 — 含自動修復功能
 // ============================================================
 const App = {
-    // ----- 儲存結構 -----
-    data: {
-        folders: {
-            // "流量監測": { name: "流量監測", items: [ { id, name, url, icon } ] }
-        },
-        uncategorized: [
-            // { id, name, url, icon }
-        ],
-        nextId: 1,
-    },
-
-    // ----- 預設資料（還原用） -----
+    data: null,
     defaultData: null,
+    _modalMode: 'link',
+    _modalFolderKey: null,
 
-    // ----- 初始化 -----
+    // ----- 初始化（含自動修復） -----
     init() {
-        // 載入 localStorage
-        const saved = localStorage.getItem('inhaler_portal_data');
+        let needFix = false;
+        let saved = localStorage.getItem('inhaler_portal_data');
+
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
+                // 檢查資料結構是否完整
+                if (typeof parsed !== 'object' || parsed === null) throw new Error('格式錯誤');
+                if (!parsed.folders || typeof parsed.folders !== 'object') throw new Error('folders 遺失');
+                if (!parsed.uncategorized || !Array.isArray(parsed.uncategorized)) throw new Error('uncategorized 遺失');
+                if (typeof parsed.nextId !== 'number' || parsed.nextId < 1) throw new Error('nextId 無效');
                 this.data = parsed;
-                // 確保 nextId 存在
-                if (!this.data.nextId) this.data.nextId = 1;
-                // 確保 folders 存在
-                if (!this.data.folders) this.data.folders = {};
-                if (!this.data.uncategorized) this.data.uncategorized = [];
             } catch(e) {
-                console.warn('讀取儲存失敗，使用預設值');
-                this.setDefaultData();
+                console.warn('儲存資料損毀，自動修復中...', e);
+                needFix = true;
+                localStorage.removeItem('inhaler_portal_data');
             }
-        } else {
-            this.setDefaultData();
         }
 
-        // 儲存一份預設值供還原用
-        this.defaultData = JSON.parse(JSON.stringify(this.data));
+        if (!this.data) {
+            this.setDefaultData();
+            if (needFix) {
+                document.getElementById('fixNotice').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('fixNotice').classList.remove('show');
+                }, 5000);
+            }
+        }
 
+        this.defaultData = JSON.parse(JSON.stringify(this.data));
         this.render();
         this.updateModalFolderSelect();
+        this._setupModalClose();
     },
 
-    // ----- 預設資料（您原本的四個網頁） -----
+    // ----- 預設資料 -----
     setDefaultData() {
         this.data = {
             folders: {
                 "流量監測": {
                     name: "流量監測",
                     items: [
-                        { id: this._nextId(), name: "基礎流量監測", url: "https://inhaler-flow.vercel.app/", icon: "chart-line" },
-                        { id: this._nextId(), name: "進階流量監測", url: "https://fictional-invention-jet.vercel.app/", icon: "wave-square" },
+                        { id: 1, name: "基礎流量監測", url: "https://inhaler-flow.vercel.app/", icon: "chart-line" },
+                        { id: 2, name: "進階流量監測", url: "https://fictional-invention-jet.vercel.app/", icon: "wave-square" },
                     ]
                 },
                 "肺部沉積": {
                     name: "肺部沉積",
                     items: [
-                        { id: this._nextId(), name: "Respimat 沉積", url: "https://respimat.vercel.app/", icon: "wind" },
-                        { id: this._nextId(), name: "Turbuhaler 沉積", url: "https://trubuhaler.vercel.app/", icon: "lungs-v" },
+                        { id: 3, name: "Respimat 沉積", url: "https://respimat.vercel.app/", icon: "wind" },
+                        { id: 4, name: "Turbuhaler 沉積", url: "https://trubuhaler.vercel.app/", icon: "lungs-v" },
                     ]
                 }
             },
             uncategorized: [],
-            nextId: this.data?.nextId || 5,
+            nextId: 5,
         };
-        if (!this.data.nextId) this.data.nextId = 5;
+    },
+
+    // ----- 手動清除儲存（修復按鈕） -----
+    clearStorage() {
+        if (!confirm('確定要清除所有儲存資料嗎？\n這會將入口恢復為預設狀態。')) return;
+        localStorage.removeItem('inhaler_portal_data');
+        this.setDefaultData();
+        this.save();
+        this.render();
+        this.updateModalFolderSelect();
+        document.getElementById('fixNotice').textContent = '✅ 已清除舊資料，恢復為預設值。';
+        document.getElementById('fixNotice').classList.add('show');
+        setTimeout(() => {
+            document.getElementById('fixNotice').classList.remove('show');
+        }, 4000);
     },
 
     _nextId() {
         return this.data.nextId++;
     },
 
-    // ----- 儲存 -----
     save() {
         localStorage.setItem('inhaler_portal_data', JSON.stringify(this.data));
     },
 
-    // ----- 渲染 -----
+    // ----- 渲染（與之前相同） -----
     render() {
         const container = document.getElementById('toolContainer');
         const data = this.data;
         let html = '';
 
-        // 資料夾
-        const folderNames = Object.keys(data.folders);
-        if (folderNames.length > 0) {
-            for (const key of folderNames) {
-                const folder = data.folders[key];
-                html += this._renderFolder(folder);
+        const folderKeys = Object.keys(data.folders);
+        if (folderKeys.length > 0) {
+            for (const key of folderKeys) {
+                html += this._renderFolder(data.folders[key]);
             }
         }
 
-        // 未分類
         if (data.uncategorized.length > 0) {
             html += `
                 <div class="folder">
@@ -600,8 +623,7 @@ const App = {
             `;
         }
 
-        // 完全空白
-        if (folderNames.length === 0 && data.uncategorized.length === 0) {
+        if (folderKeys.length === 0 && data.uncategorized.length === 0) {
             html = `<div class="empty-hint"><i class="fas fa-plus-circle" style="font-size:2rem;color:#c0d0dc;display:block;margin-bottom:8px;"></i>點擊「新增視窗」或「新增分類」開始建立您的工具集</div>`;
         }
 
@@ -610,7 +632,6 @@ const App = {
         this.updateModalFolderSelect();
     },
 
-    // ----- 渲染單一資料夾 -----
     _renderFolder(folder) {
         const key = folder.name;
         const count = folder.items.length;
@@ -626,7 +647,7 @@ const App = {
                     </div>
                     <div class="folder-actions">
                         <button onclick="App.addLinkToFolder('${this._escape(key)}')" title="在此分類新增視窗"><i class="fas fa-plus"></i></button>
-                        <button class="del-folder" onclick="App.deleteFolder('${this._escape(key)}')" title="刪除分類（內容移至未分類）"><i class="fas fa-trash-alt"></i></button>
+                        <button class="del-folder" onclick="App.deleteFolder('${this._escape(key)}')" title="刪除分類"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
                 <div class="folder-body">
@@ -637,7 +658,6 @@ const App = {
         `;
     },
 
-    // ----- 渲染單一卡片 -----
     _renderCard(item, folderKey) {
         const icon = item.icon || 'globe';
         return `
@@ -657,17 +677,14 @@ const App = {
         `;
     },
 
-    // ----- 工具函式 -----
     _escape(str) {
         return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     },
 
-    // ----- 取得項目（不論在哪） -----
+    // ----- 找項目 -----
     _findItem(id) {
-        // 檢查 uncategorized
         let idx = this.data.uncategorized.findIndex(i => i.id === id);
         if (idx !== -1) return { location: 'uncategorized', index: idx, item: this.data.uncategorized[idx] };
-        // 檢查 folders
         for (const key of Object.keys(this.data.folders)) {
             const folder = this.data.folders[key];
             const i = folder.items.findIndex(it => it.id === id);
@@ -676,7 +693,7 @@ const App = {
         return null;
     },
 
-    // ----- 新增視窗（彈窗） -----
+    // ----- 新增 -----
     addLink() {
         this._openModal('新增視窗', '請輸入名稱與網址', 'link');
     },
@@ -685,41 +702,24 @@ const App = {
         this._openModal(`新增視窗至「${folderKey}」`, '請輸入名稱與網址', 'link', folderKey);
     },
 
-    // ----- 新增分類 -----
     addFolder() {
         this._openModal('新增分類', '請輸入分類名稱', 'folder');
     },
 
-    // ----- 開啟 Modal -----
     _openModal(title, sub, mode, folderKey) {
         document.getElementById('modalTitle').textContent = title;
         document.getElementById('modalSub').textContent = sub;
         document.getElementById('modalName').value = '';
         document.getElementById('modalUrl').value = '';
-        document.getElementById('modalUrl').style.display = (mode === 'folder') ? 'none' : 'block';
-        document.querySelector('label[for="modalUrl"]').style.display = (mode === 'folder') ? 'none' : 'block';
-        // 分類下拉選單
+        const isFolder = mode === 'folder';
+        document.getElementById('modalUrl').style.display = isFolder ? 'none' : 'block';
+        document.getElementById('urlLabel').style.display = isFolder ? 'none' : 'block';
         this.updateModalFolderSelect(folderKey);
         document.getElementById('modalOverlay').classList.add('active');
-        // 儲存模式
         this._modalMode = mode;
         this._modalFolderKey = folderKey || null;
-        document.getElementById('modalConfirmBtn').textContent = (mode === 'folder') ? '建立分類' : '新增';
+        document.getElementById('modalConfirmBtn').textContent = isFolder ? '建立分類' : '新增';
         setTimeout(() => document.getElementById('modalName').focus(), 100);
-    },
-
-    updateModalFolderSelect(selected) {
-        const sel = document.getElementById('modalFolder');
-        const current = sel.value;
-        sel.innerHTML = '<option value="">— 不分類 —</option>';
-        for (const key of Object.keys(this.data.folders)) {
-            const opt = document.createElement('option');
-            opt.value = key;
-            opt.textContent = key;
-            sel.appendChild(opt);
-        }
-        if (selected) sel.value = selected;
-        else if (current && this.data.folders[current]) sel.value = current;
     },
 
     closeModal() {
@@ -734,7 +734,6 @@ const App = {
         if (!name) { alert('請輸入名稱'); return; }
 
         if (this._modalMode === 'folder') {
-            // 新增分類
             if (this.data.folders[name]) {
                 alert(`分類「${name}」已存在`);
                 return;
@@ -746,19 +745,13 @@ const App = {
             return;
         }
 
-        // 新增視窗
         if (!url) { alert('請輸入網址'); return; }
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             alert('請輸入有效的網址 (需以 http:// 或 https:// 開頭)');
             return;
         }
 
-        const newItem = {
-            id: this._nextId(),
-            name: name,
-            url: url,
-            icon: 'globe',
-        };
+        const newItem = { id: this._nextId(), name: name, url: url, icon: 'globe' };
 
         if (folder && this.data.folders[folder]) {
             this.data.folders[folder].items.push(newItem);
@@ -797,7 +790,6 @@ const App = {
         this.render();
     },
 
-    // ----- 更新網址 -----
     updateUrl(id, newUrl) {
         const found = this._findItem(id);
         if (!found) return;
@@ -830,7 +822,6 @@ const App = {
         if (!confirm(`確定要刪除分類「${key}」嗎？\n裡面的項目將移到「未分類」。`)) return;
         const folder = this.data.folders[key];
         if (!folder) return;
-        // 將項目移到未分類
         for (const item of folder.items) {
             this.data.uncategorized.push(item);
         }
@@ -846,7 +837,7 @@ const App = {
         window.open(found.item.url, '_blank');
     },
 
-    // ----- 還原預設 -----
+    // ----- 還原 -----
     resetAll() {
         if (!confirm('確定要還原為預設設定嗎？\n您所有的自訂項目將會遺失！')) return;
         this.setDefaultData();
@@ -855,7 +846,22 @@ const App = {
         this.updateModalFolderSelect();
     },
 
-    // ----- 關閉 Modal（點擊外部） -----
+    // ----- Modal 下拉選單 -----
+    updateModalFolderSelect(selected) {
+        const sel = document.getElementById('modalFolder');
+        const current = sel.value;
+        sel.innerHTML = '<option value="">— 不分類 —</option>';
+        for (const key of Object.keys(this.data.folders)) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = key;
+            sel.appendChild(opt);
+        }
+        if (selected) sel.value = selected;
+        else if (current && this.data.folders[current]) sel.value = current;
+    },
+
+    // ----- Modal 關閉 -----
     _setupModalClose() {
         document.getElementById('modalOverlay').addEventListener('click', (e) => {
             if (e.target === document.getElementById('modalOverlay')) this.closeModal();
@@ -871,7 +877,6 @@ const App = {
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
-    App._setupModalClose();
 });
 </script>
 </div>

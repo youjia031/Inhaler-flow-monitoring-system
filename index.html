@@ -63,20 +63,20 @@
         }
         .header-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
         .header-actions button {
-            padding: 8px 18px;
+            padding: 8px 16px;
             border-radius: 30px;
             border: none;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             transition: 0.2s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         .btn-add-folder {
             background: #e8edf3;
@@ -105,6 +105,23 @@
         }
         .btn-clear-storage:hover {
             background: #fcd5d5;
+        }
+        .btn-export {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .btn-export:hover {
+            background: #c8e6c9;
+        }
+        .btn-import {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .btn-import:hover {
+            background: #bbdefb;
+        }
+        #importFileInput {
+            display: none;
         }
         .tool-grid {
             display: flex;
@@ -180,28 +197,7 @@
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1rem;
         }
-        .folder-body .tool-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.2rem 1rem 1rem;
-            border: 1px solid rgba(200, 212, 225, 0.35);
-            transition: 0.2s;
-            text-decoration: none;
-            color: #1a2e3f;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        .folder-body .tool-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 28px -8px rgba(18, 52, 77, 0.12);
-            border-color: #b8cedf;
-        }
-        .uncategorized {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
+        .folder-body .tool-card,
         .uncategorized .tool-card {
             background: white;
             border-radius: 20px;
@@ -214,10 +210,16 @@
             flex-direction: column;
             position: relative;
         }
+        .folder-body .tool-card:hover,
         .uncategorized .tool-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 28px -8px rgba(18, 52, 77, 0.12);
             border-color: #b8cedf;
+        }
+        .uncategorized {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
         }
         .tool-card .icon {
             font-size: 1.8rem;
@@ -330,6 +332,13 @@
             font-size: 12px;
             color: #4a5f73;
         }
+        .storage-status {
+            font-size: 12px;
+            color: #7a8a9a;
+            background: #f0f4f8;
+            padding: 2px 12px;
+            border-radius: 30px;
+        }
 
         /* ===== Modal ===== */
         .modal-overlay {
@@ -413,7 +422,7 @@
             background: #163d5e;
         }
 
-        /* ===== 修復通知 ===== */
+        /* ===== 通知 ===== */
         .fix-notice {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -456,28 +465,33 @@
             <span class="sub"><i class="fas fa-microchip" style="margin-right:6px;opacity:0.7;"></i>聲學氣流可視化 · 可自訂分類</span>
         </div>
         <div class="header-actions">
-            <button class="btn-add-folder" onclick="App.addFolder()"><i class="fas fa-folder-plus"></i> 新增分類</button>
-            <button class="btn-add-link" onclick="App.addLink()"><i class="fas fa-plus-circle"></i> 新增視窗</button>
+            <button class="btn-add-folder" onclick="App.addFolder()"><i class="fas fa-folder-plus"></i> 分類</button>
+            <button class="btn-add-link" onclick="App.addLink()"><i class="fas fa-plus-circle"></i> 視窗</button>
+            <button class="btn-export" onclick="App.exportData()"><i class="fas fa-download"></i> 備份</button>
+            <button class="btn-import" onclick="document.getElementById('importFileInput').click()"><i class="fas fa-upload"></i> 還原</button>
             <button class="btn-reset" onclick="App.resetAll()" title="還原為預設"><i class="fas fa-undo-alt"></i></button>
-            <button class="btn-clear-storage" onclick="App.clearStorage()" title="清除所有儲存資料（修復用）"><i class="fas fa-broom"></i> 修復</button>
+            <button class="btn-clear-storage" onclick="App.clearStorage()" title="清除所有儲存資料"><i class="fas fa-broom"></i> 修復</button>
         </div>
+        <input type="file" id="importFileInput" accept=".json" onchange="App.importData(event)" />
     </div>
 
     <!-- 修復通知 -->
-    <div class="fix-notice" id="fixNotice">
-        <strong>🔄 已自動修復儲存資料</strong> — 因儲存格式不相容，已重置為預設值。您可以重新開始新增項目。
-    </div>
+    <div class="fix-notice" id="fixNotice"></div>
 
     <!-- 工具區域 -->
     <div id="toolContainer"></div>
 
     <!-- 底部 -->
     <div class="footer-note">
-        <span><span class="status-dot"></span> 點擊名稱可重新命名</span>
+        <span>
+            <span class="status-dot"></span>
+            點擊名稱可重新命名
+            <span class="storage-status" id="storageStatus">✅ 自動儲存中</span>
+        </span>
         <span>
             <i class="fas fa-shield-alt"></i>
             資料儲存於瀏覽器
-            <span class="badge-version">v2.2</span>
+            <span class="badge-version">v2.3</span>
         </span>
     </div>
 </div>
@@ -502,7 +516,7 @@
 
 <script>
 // ============================================================
-//  App 核心 — 含自動修復功能
+//  App 核心 — 含匯入 / 匯出功能
 // ============================================================
 const App = {
     data: null,
@@ -510,7 +524,7 @@ const App = {
     _modalMode: 'link',
     _modalFolderKey: null,
 
-    // ----- 初始化（含自動修復） -----
+    // ----- 初始化 -----
     init() {
         let needFix = false;
         let saved = localStorage.getItem('inhaler_portal_data');
@@ -518,7 +532,6 @@ const App = {
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                // 檢查資料結構是否完整
                 if (typeof parsed !== 'object' || parsed === null) throw new Error('格式錯誤');
                 if (!parsed.folders || typeof parsed.folders !== 'object') throw new Error('folders 遺失');
                 if (!parsed.uncategorized || !Array.isArray(parsed.uncategorized)) throw new Error('uncategorized 遺失');
@@ -534,10 +547,7 @@ const App = {
         if (!this.data) {
             this.setDefaultData();
             if (needFix) {
-                document.getElementById('fixNotice').classList.add('show');
-                setTimeout(() => {
-                    document.getElementById('fixNotice').classList.remove('show');
-                }, 5000);
+                this._showFixNotice('🔄 已自動修復儲存資料，恢復為預設值');
             }
         }
 
@@ -545,6 +555,7 @@ const App = {
         this.render();
         this.updateModalFolderSelect();
         this._setupModalClose();
+        this._updateStorageStatus();
     },
 
     // ----- 預設資料 -----
@@ -571,30 +582,99 @@ const App = {
         };
     },
 
-    // ----- 手動清除儲存（修復按鈕） -----
-    clearStorage() {
-        if (!confirm('確定要清除所有儲存資料嗎？\n這會將入口恢復為預設狀態。')) return;
-        localStorage.removeItem('inhaler_portal_data');
-        this.setDefaultData();
-        this.save();
-        this.render();
-        this.updateModalFolderSelect();
-        document.getElementById('fixNotice').textContent = '✅ 已清除舊資料，恢復為預設值。';
-        document.getElementById('fixNotice').classList.add('show');
-        setTimeout(() => {
-            document.getElementById('fixNotice').classList.remove('show');
-        }, 4000);
+    // ----- 通知 -----
+    _showFixNotice(msg) {
+        const el = document.getElementById('fixNotice');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 5000);
     },
+
+    // ----- 儲存狀態 -----
+    _updateStorageStatus() {
+        const el = document.getElementById('storageStatus');
+        try {
+            const saved = localStorage.getItem('inhaler_portal_data');
+            if (saved) {
+                const size = new Blob([saved]).size;
+                el.textContent = `✅ 已儲存 (${size} bytes)`;
+            } else {
+                el.textContent = '⚠️ 無儲存資料';
+            }
+        } catch(e) {
+            el.textContent = '⚠️ 儲存異常';
+        }
+    },
+
+    // ----- 儲存 -----
+    save() {
+        try {
+            localStorage.setItem('inhaler_portal_data', JSON.stringify(this.data));
+            this._updateStorageStatus();
+        } catch(e) {
+            console.error('儲存失敗:', e);
+            this._showFixNotice('❌ 儲存失敗！可能儲存空間已滿。請使用「備份」功能匯出資料後，再點「修復」清除舊資料。');
+        }
+    },
+
+    // ============================================================
+    //  匯出 / 匯入（備份功能）
+    // ============================================================
+    exportData() {
+        try {
+            const dataStr = JSON.stringify(this.data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date().toISOString().slice(0, 10);
+            a.download = `入口備份_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            this._showFixNotice('✅ 備份成功！檔案已下載。');
+        } catch(e) {
+            alert('匯出失敗: ' + e.message);
+        }
+    },
+
+    importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (!imported.folders || typeof imported.folders !== 'object') {
+                    throw new Error('無效的備份檔案：缺少 folders');
+                }
+                if (!imported.uncategorized || !Array.isArray(imported.uncategorized)) {
+                    throw new Error('無效的備份檔案：缺少 uncategorized');
+                }
+                if (!confirm('確定要還原這個備份嗎？\n目前的資料將會被覆蓋！')) return;
+                this.data = imported;
+                this.save();
+                this.render();
+                this.updateModalFolderSelect();
+                this._showFixNotice('✅ 還原成功！已載入備份資料。');
+            } catch(err) {
+                alert('匯入失敗: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // 重置 input
+    },
+
+    // ============================================================
+    //  以下為原有功能（不變）
+    // ============================================================
 
     _nextId() {
         return this.data.nextId++;
     },
 
-    save() {
-        localStorage.setItem('inhaler_portal_data', JSON.stringify(this.data));
-    },
-
-    // ----- 渲染（與之前相同） -----
+    // ----- 渲染 -----
     render() {
         const container = document.getElementById('toolContainer');
         const data = this.data;
@@ -681,7 +761,6 @@ const App = {
         return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     },
 
-    // ----- 找項目 -----
     _findItem(id) {
         let idx = this.data.uncategorized.findIndex(i => i.id === id);
         if (idx !== -1) return { location: 'uncategorized', index: idx, item: this.data.uncategorized[idx] };
@@ -844,6 +923,17 @@ const App = {
         this.save();
         this.render();
         this.updateModalFolderSelect();
+        this._showFixNotice('✅ 已還原為預設值');
+    },
+
+    clearStorage() {
+        if (!confirm('確定要清除所有儲存資料嗎？\n這會將入口恢復為預設狀態。')) return;
+        localStorage.removeItem('inhaler_portal_data');
+        this.setDefaultData();
+        this.save();
+        this.render();
+        this.updateModalFolderSelect();
+        this._showFixNotice('✅ 已清除舊資料，恢復為預設值');
     },
 
     // ----- Modal 下拉選單 -----

@@ -6,437 +6,82 @@
     <title>吸入器流量監測 · 入口</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-        }
-        body {
-            background: linear-gradient(145deg, #f0f4f8 0%, #e6ecf3 100%);
-            min-height: 100vh;
-            padding: 2rem 1.5rem;
-        }
-        .app-wrapper {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-        .login-card {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 48px;
-            padding: 2.2rem 2.5rem 2rem;
-            box-shadow: 0 30px 60px -20px rgba(0, 20, 40, 0.4),
-                        0 0 0 1px rgba(255, 255, 255, 0.6) inset;
-        }
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 1.8rem;
-        }
-        .app-header .left {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .app-header h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            color: #0b2b44;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .app-header h1 i {
-            color: #1f6e8c;
-            font-size: 1.8rem;
-        }
-        .app-header .sub {
-            font-size: 0.95rem;
-            color: #4a5f73;
-            padding-left: 4px;
-        }
-        .header-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .header-actions button {
-            padding: 8px 16px;
-            border-radius: 30px;
-            border: none;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-add-folder {
-            background: #e8edf3;
-            color: #1f4e79;
-        }
-        .btn-add-folder:hover {
-            background: #d5dee8;
-        }
-        .btn-add-link {
-            background: #1f4e79;
-            color: white;
-        }
-        .btn-add-link:hover {
-            background: #163d5e;
-        }
-        .btn-sync {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-        .btn-sync:hover {
-            background: #bbdefb;
-        }
-        .btn-sync.syncing {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        .btn-sync .fa-spinner {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .btn-reset {
-            background: #f0f0f0;
-            color: #7a8a9a;
-        }
-        .btn-reset:hover {
-            background: #e0e0e0;
-        }
-        .tool-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 1.8rem;
-            margin: 1.5rem 0 1.5rem;
-        }
-        .folder {
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 24px;
-            padding: 16px 18px 14px;
-            border: 1px solid rgba(200, 212, 225, 0.3);
-        }
-        .folder-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            cursor: pointer;
-            user-select: none;
-        }
-        .folder-header .left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .folder-header .folder-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1a2e3f;
-            background: transparent;
-            border: none;
-            outline: none;
-            padding: 2px 8px;
-            border-radius: 6px;
-            min-width: 60px;
-        }
-        .folder-header .folder-name:hover {
-            background: rgba(0,0,0,0.04);
-        }
-        .folder-header .folder-name:focus {
-            background: white;
-            box-shadow: 0 0 0 2px #1f4e79;
-        }
-        .folder-header .folder-count {
-            font-size: 13px;
-            color: #7a8a9a;
-            margin-left: 4px;
-        }
-        .folder-header .folder-actions {
-            display: flex;
-            gap: 6px;
-        }
-        .folder-header .folder-actions button {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: #8a9aa8;
-            font-size: 14px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            transition: 0.15s;
-        }
-        .folder-header .folder-actions button:hover {
-            background: rgba(0,0,0,0.06);
-            color: #1f4e79;
-        }
-        .folder-header .folder-actions .del-folder:hover {
-            color: #c0392b;
-        }
-        .folder-body {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        .folder-body .tool-card,
-        .uncategorized .tool-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.2rem 1rem 1rem;
-            border: 1px solid rgba(200, 212, 225, 0.35);
-            transition: 0.2s;
-            text-decoration: none;
-            color: #1a2e3f;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        .folder-body .tool-card:hover,
-        .uncategorized .tool-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 28px -8px rgba(18, 52, 77, 0.12);
-            border-color: #b8cedf;
-        }
-        .uncategorized {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        .tool-card .icon {
-            font-size: 1.8rem;
-            color: #1f6e8c;
-            background: #e3edf5;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 16px;
-            margin-bottom: 8px;
-        }
-        .tool-card .card-name {
-            font-size: 1.05rem;
-            font-weight: 600;
-            background: transparent;
-            border: none;
-            outline: none;
-            padding: 2px 6px;
-            border-radius: 4px;
-            width: 100%;
-            color: #0b2b44;
-        }
-        .tool-card .card-name:hover {
-            background: rgba(0,0,0,0.04);
-        }
-        .tool-card .card-name:focus {
-            background: white;
-            box-shadow: 0 0 0 2px #1f4e79;
-        }
-        .tool-card .card-url {
-            font-size: 0.7rem;
-            color: #8a9aa8;
-            margin: 2px 0 6px;
-            word-break: break-all;
-            padding: 0 6px;
-            background: transparent;
-            border: none;
-            outline: none;
-            border-radius: 4px;
-        }
-        .tool-card .card-url:hover {
-            background: rgba(0,0,0,0.03);
-        }
-        .tool-card .card-url:focus {
-            background: white;
-            box-shadow: 0 0 0 2px #1f4e79;
-        }
-        .tool-card .card-actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 6px;
-            justify-content: flex-end;
-        }
-        .tool-card .card-actions button {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: #8a9aa8;
-            font-size: 13px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            transition: 0.15s;
-        }
-        .tool-card .card-actions button:hover {
-            background: rgba(0,0,0,0.06);
-        }
-        .tool-card .card-actions .del-card:hover {
-            color: #c0392b;
-        }
-        .tool-card .card-actions .open-link {
-            color: #1f6e8c;
-            font-weight: 600;
-        }
-        .tool-card .card-actions .open-link:hover {
-            background: #e3edf5;
-        }
-        .empty-hint {
-            color: #8a9aa8;
-            font-size: 14px;
-            padding: 20px 0 10px;
-            text-align: center;
-        }
-        .footer-note {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            padding-top: 1.2rem;
-            border-top: 1px solid rgba(160, 184, 204, 0.25);
-            color: #4b657b;
-            font-size: 0.9rem;
-        }
-        .footer-note .status-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #3d9970;
-            border-radius: 20px;
-            margin-right: 8px;
-            box-shadow: 0 0 0 2px rgba(61, 153, 112, 0.2);
-        }
-        .footer-note .badge-version {
-            background: #eef3f8;
-            padding: 2px 14px;
-            border-radius: 30px;
-            font-size: 12px;
-            color: #4a5f73;
-        }
-        .sync-status {
-            font-size: 12px;
-            color: #7a8a9a;
-            background: #f0f4f8;
-            padding: 2px 12px;
-            border-radius: 30px;
-        }
-        .sync-status.success {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .sync-status.error {
-            background: #fde8e8;
-            color: #c0392b;
-        }
-        .sync-status.syncing {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.35);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
+        /* ===== 樣式（與之前相同） ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; }
+        body { background: linear-gradient(145deg, #f0f4f8 0%, #e6ecf3 100%); min-height: 100vh; padding: 2rem 1.5rem; }
+        .app-wrapper { max-width: 1100px; margin: 0 auto; }
+        .login-card { width: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 48px; padding: 2.2rem 2.5rem 2rem; box-shadow: 0 30px 60px -20px rgba(0,20,40,0.4), 0 0 0 1px rgba(255,255,255,0.6) inset; }
+        .app-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1.8rem; }
+        .app-header .left { display: flex; flex-direction: column; gap: 2px; }
+        .app-header h1 { font-size: 2rem; font-weight: 600; color: #0b2b44; display: flex; align-items: center; gap: 10px; }
+        .app-header h1 i { color: #1f6e8c; font-size: 1.8rem; }
+        .app-header .sub { font-size: 0.95rem; color: #4a5f73; padding-left: 4px; }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .header-actions button { padding: 8px 16px; border-radius: 30px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .btn-add-folder { background: #e8edf3; color: #1f4e79; }
+        .btn-add-folder:hover { background: #d5dee8; }
+        .btn-add-link { background: #1f4e79; color: white; }
+        .btn-add-link:hover { background: #163d5e; }
+        .btn-sync { background: #e3f2fd; color: #1565c0; }
+        .btn-sync:hover { background: #bbdefb; }
+        .btn-sync.syncing { opacity: 0.6; pointer-events: none; }
+        .btn-sync .fa-spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn-reset { background: #f0f0f0; color: #7a8a9a; }
+        .btn-reset:hover { background: #e0e0e0; }
+        .tool-grid { display: flex; flex-direction: column; gap: 1.8rem; margin: 1.5rem 0 1.5rem; }
+        .folder { background: rgba(255,255,255,0.5); border-radius: 24px; padding: 16px 18px 14px; border: 1px solid rgba(200,212,225,0.3); }
+        .folder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; user-select: none; }
+        .folder-header .left { display: flex; align-items: center; gap: 10px; }
+        .folder-header .folder-name { font-size: 1.1rem; font-weight: 600; color: #1a2e3f; background: transparent; border: none; outline: none; padding: 2px 8px; border-radius: 6px; min-width: 60px; }
+        .folder-header .folder-name:hover { background: rgba(0,0,0,0.04); }
+        .folder-header .folder-name:focus { background: white; box-shadow: 0 0 0 2px #1f4e79; }
+        .folder-header .folder-count { font-size: 13px; color: #7a8a9a; margin-left: 4px; }
+        .folder-header .folder-actions { display: flex; gap: 6px; }
+        .folder-header .folder-actions button { background: transparent; border: none; cursor: pointer; color: #8a9aa8; font-size: 14px; padding: 4px 8px; border-radius: 6px; transition: 0.15s; }
+        .folder-header .folder-actions button:hover { background: rgba(0,0,0,0.06); color: #1f4e79; }
+        .folder-header .folder-actions .del-folder:hover { color: #c0392b; }
+        .folder-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .folder-body .tool-card, .uncategorized .tool-card { background: white; border-radius: 20px; padding: 1.2rem 1rem 1rem; border: 1px solid rgba(200,212,225,0.35); transition: 0.2s; text-decoration: none; color: #1a2e3f; display: flex; flex-direction: column; position: relative; }
+        .folder-body .tool-card:hover, .uncategorized .tool-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px -8px rgba(18,52,77,0.12); border-color: #b8cedf; }
+        .uncategorized { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .tool-card .icon { font-size: 1.8rem; color: #1f6e8c; background: #e3edf5; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 16px; margin-bottom: 8px; }
+        .tool-card .card-name { font-size: 1.05rem; font-weight: 600; background: transparent; border: none; outline: none; padding: 2px 6px; border-radius: 4px; width: 100%; color: #0b2b44; }
+        .tool-card .card-name:hover { background: rgba(0,0,0,0.04); }
+        .tool-card .card-name:focus { background: white; box-shadow: 0 0 0 2px #1f4e79; }
+        .tool-card .card-url { font-size: 0.7rem; color: #8a9aa8; margin: 2px 0 6px; word-break: break-all; padding: 0 6px; background: transparent; border: none; outline: none; border-radius: 4px; }
+        .tool-card .card-url:hover { background: rgba(0,0,0,0.03); }
+        .tool-card .card-url:focus { background: white; box-shadow: 0 0 0 2px #1f4e79; }
+        .tool-card .card-actions { display: flex; gap: 6px; margin-top: 6px; justify-content: flex-end; }
+        .tool-card .card-actions button { background: transparent; border: none; cursor: pointer; color: #8a9aa8; font-size: 13px; padding: 2px 8px; border-radius: 6px; transition: 0.15s; }
+        .tool-card .card-actions button:hover { background: rgba(0,0,0,0.06); }
+        .tool-card .card-actions .del-card:hover { color: #c0392b; }
+        .tool-card .card-actions .open-link { color: #1f6e8c; font-weight: 600; }
+        .tool-card .card-actions .open-link:hover { background: #e3edf5; }
+        .empty-hint { color: #8a9aa8; font-size: 14px; padding: 20px 0 10px; text-align: center; }
+        .footer-note { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid rgba(160,184,204,0.25); color: #4b657b; font-size: 0.9rem; }
+        .footer-note .status-dot { display: inline-block; width: 10px; height: 10px; background: #3d9970; border-radius: 20px; margin-right: 8px; box-shadow: 0 0 0 2px rgba(61,153,112,0.2); }
+        .footer-note .badge-version { background: #eef3f8; padding: 2px 14px; border-radius: 30px; font-size: 12px; color: #4a5f73; }
+        .sync-status { font-size: 12px; color: #7a8a9a; background: #f0f4f8; padding: 2px 12px; border-radius: 30px; }
+        .sync-status.success { background: #e8f5e9; color: #2e7d32; }
+        .sync-status.error { background: #fde8e8; color: #c0392b; }
+        .sync-status.syncing { background: #fff3cd; color: #856404; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999; }
         .modal-overlay.active { display: flex; }
-        .modal-box {
-            background: white;
-            border-radius: 28px;
-            padding: 2rem 2.2rem;
-            max-width: 460px;
-            width: 92%;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.25);
-        }
-        .modal-box h3 {
-            font-size: 1.3rem;
-            color: #0b2b44;
-            margin-bottom: 6px;
-        }
-        .modal-box .sub {
-            color: #7a8a9a;
-            font-size: 14px;
-            margin-bottom: 18px;
-        }
-        .modal-box label {
-            font-size: 13px;
-            font-weight: 500;
-            color: #2c3e50;
-            display: block;
-            margin-top: 12px;
-        }
-        .modal-box input, .modal-box select {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1px solid #d0d8e0;
-            font-size: 14px;
-            margin-top: 4px;
-            outline: none;
-            transition: 0.15s;
-        }
-        .modal-box input:focus, .modal-box select:focus {
-            border-color: #1f4e79;
-            box-shadow: 0 0 0 3px rgba(31,78,121,0.1);
-        }
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: flex-end;
-        }
-        .modal-actions button {
-            padding: 8px 24px;
-            border-radius: 30px;
-            border: none;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .modal-actions .btn-cancel {
-            background: #f0f0f0;
-            color: #5a6a7a;
-        }
-        .modal-actions .btn-cancel:hover {
-            background: #e0e0e0;
-        }
-        .modal-actions .btn-confirm {
-            background: #1f4e79;
-            color: white;
-        }
-        .modal-actions .btn-confirm:hover {
-            background: #163d5e;
-        }
-        .fix-notice {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 12px;
-            padding: 12px 18px;
-            margin-bottom: 16px;
-            color: #856404;
-            font-size: 14px;
-            display: none;
-        }
-        .fix-notice.show {
-            display: block;
-        }
+        .modal-box { background: white; border-radius: 28px; padding: 2rem 2.2rem; max-width: 460px; width: 92%; box-shadow: 0 40px 80px rgba(0,0,0,0.25); }
+        .modal-box h3 { font-size: 1.3rem; color: #0b2b44; margin-bottom: 6px; }
+        .modal-box .sub { color: #7a8a9a; font-size: 14px; margin-bottom: 18px; }
+        .modal-box label { font-size: 13px; font-weight: 500; color: #2c3e50; display: block; margin-top: 12px; }
+        .modal-box input, .modal-box select { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid #d0d8e0; font-size: 14px; margin-top: 4px; outline: none; transition: 0.15s; }
+        .modal-box input:focus, .modal-box select:focus { border-color: #1f4e79; box-shadow: 0 0 0 3px rgba(31,78,121,0.1); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+        .modal-actions button { padding: 8px 24px; border-radius: 30px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .modal-actions .btn-cancel { background: #f0f0f0; color: #5a6a7a; }
+        .modal-actions .btn-cancel:hover { background: #e0e0e0; }
+        .modal-actions .btn-confirm { background: #1f4e79; color: white; }
+        .modal-actions .btn-confirm:hover { background: #163d5e; }
+        .fix-notice { background: #fff3cd; border: 1px solid #ffc107; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; color: #856404; font-size: 14px; display: none; }
+        .fix-notice.show { display: block; }
         @media (max-width: 700px) {
             .login-card { padding: 1.5rem 1.2rem; border-radius: 32px; }
             .app-header { flex-direction: column; align-items: stretch; gap: 12px; }
@@ -458,7 +103,7 @@
     <div class="app-header">
         <div class="left">
             <h1><i class="fas fa-lungs"></i> 吸入器流量監測 · 入口</h1>
-            <span class="sub"><i class="fas fa-microchip" style="margin-right:6px;opacity:0.7;"></i>聲學氣流可視化 · Supabase 雲端同步</span>
+            <span class="sub"><i class="fas fa-microchip" style="margin-right:6px;opacity:0.7;"></i>聲學氣流可視化 · Vercel 後端 + Supabase</span>
         </div>
         <div class="header-actions">
             <button class="btn-add-folder" onclick="App.addFolder()"><i class="fas fa-folder-plus"></i> 分類</button>
@@ -480,7 +125,7 @@
         <span>
             <i class="fas fa-cloud"></i>
             資料儲存於 Supabase
-            <span class="badge-version">v4.0</span>
+            <span class="badge-version">v4.1</span>
         </span>
     </div>
 </div>
@@ -504,13 +149,7 @@
 
 <script>
 // ============================================================
-//  設定 Supabase（你的金鑰）
-// ============================================================
-const SUPABASE_URL = 'https://xkuipukvpgglwnonmjbc.supabase.co/rest/v1/';
-const SUPABASE_KEY = 'sb_publishable_SBtHX0AudJ9f08ZE6SY4hQ_9T1jHKb9';
-
-// ============================================================
-//  App 核心 — 含 Supabase 同步
+//  App 核心 — 前端直接呼叫 Vercel 後端 API
 // ============================================================
 const App = {
     data: null,
@@ -518,10 +157,8 @@ const App = {
     _modalMode: 'link',
     _modalFolderKey: null,
     _isSyncing: false,
-    _tableName: 'portal_data',
 
     init() {
-        // 先從 localStorage 載入
         let saved = localStorage.getItem('inhaler_portal_data');
         if (saved) {
             try {
@@ -543,7 +180,7 @@ const App = {
         this.updateModalFolderSelect();
         this._setupModalClose();
 
-        // 自動從 Supabase 載入
+        // 從後端載入
         this.loadFromCloud();
     },
 
@@ -589,7 +226,7 @@ const App = {
     },
 
     // ============================================================
-    //  Supabase 同步
+    //  透過 Vercel 後端同步（這樣 Logs 才會有記錄）
     // ============================================================
     async syncToCloud() {
         if (this._isSyncing) return;
@@ -601,43 +238,21 @@ const App = {
         this._setSyncStatus('⏳ 同步中...', 'syncing');
 
         try {
-            // 先查詢現有資料
-            const checkRes = await fetch(SUPABASE_URL + this._tableName + '?select=id', {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': 'Bearer ' + SUPABASE_KEY
-                }
-            });
-
-            const result = await checkRes.json();
-            let url = SUPABASE_URL + this._tableName;
-            let method = 'POST';
-
-            if (result && result.length > 0 && result[0]?.id) {
-                // 已有資料，用 PATCH 更新
-                url = SUPABASE_URL + this._tableName + '?id=eq.' + result[0].id;
-                method = 'PATCH';
-            }
-
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': 'Bearer ' + SUPABASE_KEY,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({ data: this.data })
+            const response = await fetch('/api/data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.data)
             });
 
             if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`HTTP ${response.status}: ${errText}`);
+                const err = await response.text();
+                throw new Error(`HTTP ${response.status}: ${err}`);
             }
 
-            console.log('✅ 同步成功');
+            const result = await response.json();
+            console.log('✅ 同步成功:', result);
             this._setSyncStatus('✅ 已同步', 'success');
-            this._showFixNotice('✅ 資料已同步到 Supabase！');
+            this._showFixNotice('✅ 資料已同步到雲端！');
 
         } catch (error) {
             console.error('❌ 同步失敗:', error);
@@ -653,16 +268,10 @@ const App = {
     async loadFromCloud() {
         try {
             this._setSyncStatus('⏳ 載入中...', 'syncing');
-            const response = await fetch(SUPABASE_URL + this._tableName + '?select=data', {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': 'Bearer ' + SUPABASE_KEY
-                }
-            });
+            const response = await fetch('/api/data');
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    console.log('Supabase 尚無資料，使用本地');
                     this._setSyncStatus('📡 無雲端資料', '');
                     return;
                 }
@@ -670,14 +279,13 @@ const App = {
             }
 
             const result = await response.json();
-            if (result && result.length > 0 && result[0]?.data) {
-                this.data = result[0].data;
+            if (result.data) {
+                this.data = result.data;
                 this.save();
                 this.render();
                 this.updateModalFolderSelect();
                 this._setSyncStatus('✅ 已載入雲端', 'success');
-                this._showFixNotice('📥 已從 Supabase 載入最新資料');
-                console.log('✅ 從 Supabase 載入成功');
+                this._showFixNotice('📥 已從雲端載入最新資料');
             }
         } catch (error) {
             console.warn('⚠️ 載入雲端失敗:', error);
@@ -686,7 +294,7 @@ const App = {
     },
 
     // ============================================================
-    //  核心功能
+    //  核心功能（與之前相同）
     // ============================================================
     _nextId() {
         return this.data.nextId++;

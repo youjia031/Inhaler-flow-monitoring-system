@@ -91,36 +91,30 @@
         .btn-add-link:hover {
             background: #163d5e;
         }
+        .btn-sync {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .btn-sync:hover {
+            background: #bbdefb;
+        }
+        .btn-sync.syncing {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .btn-sync .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         .btn-reset {
             background: #f0f0f0;
             color: #7a8a9a;
         }
         .btn-reset:hover {
             background: #e0e0e0;
-        }
-        .btn-clear-storage {
-            background: #fde8e8;
-            color: #c0392b;
-        }
-        .btn-clear-storage:hover {
-            background: #fcd5d5;
-        }
-        .btn-export {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .btn-export:hover {
-            background: #c8e6c9;
-        }
-        .btn-import {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-        .btn-import:hover {
-            background: #bbdefb;
-        }
-        #importFileInput {
-            display: none;
         }
         .tool-grid {
             display: flex;
@@ -331,12 +325,24 @@
             font-size: 12px;
             color: #4a5f73;
         }
-        .storage-status {
+        .sync-status {
             font-size: 12px;
             color: #7a8a9a;
             background: #f0f4f8;
             padding: 2px 12px;
             border-radius: 30px;
+        }
+        .sync-status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .sync-status.error {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+        .sync-status.syncing {
+            background: #fff3cd;
+            color: #856404;
         }
         .modal-overlay {
             position: fixed;
@@ -452,17 +458,14 @@
     <div class="app-header">
         <div class="left">
             <h1><i class="fas fa-lungs"></i> 吸入器流量監測 · 入口</h1>
-            <span class="sub"><i class="fas fa-microchip" style="margin-right:6px;opacity:0.7;"></i>聲學氣流可視化 · 可自訂分類</span>
+            <span class="sub"><i class="fas fa-microchip" style="margin-right:6px;opacity:0.7;"></i>聲學氣流可視化 · Supabase 雲端同步</span>
         </div>
         <div class="header-actions">
             <button class="btn-add-folder" onclick="App.addFolder()"><i class="fas fa-folder-plus"></i> 分類</button>
             <button class="btn-add-link" onclick="App.addLink()"><i class="fas fa-plus-circle"></i> 視窗</button>
-            <button class="btn-export" onclick="App.exportData()"><i class="fas fa-download"></i> 備份</button>
-            <button class="btn-import" onclick="document.getElementById('importFileInput').click()"><i class="fas fa-upload"></i> 還原</button>
-            <button class="btn-reset" onclick="App.resetAll()" title="還原為預設"><i class="fas fa-undo-alt"></i></button>
-            <button class="btn-clear-storage" onclick="App.clearStorage()" title="清除所有儲存資料"><i class="fas fa-broom"></i> 修復</button>
+            <button class="btn-sync" id="syncBtn" onclick="App.syncToCloud()"><i class="fas fa-cloud-upload-alt"></i> 同步</button>
+            <button class="btn-reset" onclick="App.resetAll()"><i class="fas fa-undo-alt"></i> 重置</button>
         </div>
-        <input type="file" id="importFileInput" accept=".json" onchange="App.importData(event)" />
     </div>
 
     <div class="fix-notice" id="fixNotice"></div>
@@ -472,12 +475,12 @@
         <span>
             <span class="status-dot"></span>
             點擊名稱可重新命名
-            <span class="storage-status" id="storageStatus">✅ 自動儲存中</span>
+            <span class="sync-status" id="syncStatus">📡 未同步</span>
         </span>
         <span>
-            <i class="fas fa-shield-alt"></i>
-            資料儲存於瀏覽器
-            <span class="badge-version">v2.3</span>
+            <i class="fas fa-cloud"></i>
+            資料儲存於 Supabase
+            <span class="badge-version">v4.0</span>
         </span>
     </div>
 </div>
@@ -501,45 +504,47 @@
 
 <script>
 // ============================================================
-//  App 核心
+//  設定 Supabase（你的金鑰）
+// ============================================================
+const SUPABASE_URL = 'https://xkuipukvpgglwnonmjbc.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_SBtHX0AudJ9f08ZE6SY4hQ_9T1jHKb9';
+
+// ============================================================
+//  App 核心 — 含 Supabase 同步
 // ============================================================
 const App = {
     data: null,
     defaultData: null,
     _modalMode: 'link',
     _modalFolderKey: null,
+    _isSyncing: false,
+    _tableName: 'portal_data',
 
     init() {
-        let needFix = false;
+        // 先從 localStorage 載入
         let saved = localStorage.getItem('inhaler_portal_data');
-
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                if (typeof parsed !== 'object' || parsed === null) throw new Error('格式錯誤');
-                if (!parsed.folders || typeof parsed.folders !== 'object') throw new Error('folders 遺失');
-                if (!parsed.uncategorized || !Array.isArray(parsed.uncategorized)) throw new Error('uncategorized 遺失');
-                if (typeof parsed.nextId !== 'number' || parsed.nextId < 1) throw new Error('nextId 無效');
-                this.data = parsed;
+                if (parsed && parsed.folders) {
+                    this.data = parsed;
+                } else {
+                    this.setDefaultData();
+                }
             } catch(e) {
-                console.warn('儲存資料損毀，自動修復中...', e);
-                needFix = true;
-                localStorage.removeItem('inhaler_portal_data');
+                this.setDefaultData();
             }
-        }
-
-        if (!this.data) {
+        } else {
             this.setDefaultData();
-            if (needFix) {
-                this._showFixNotice('🔄 已自動修復儲存資料，恢復為預設值');
-            }
         }
 
         this.defaultData = JSON.parse(JSON.stringify(this.data));
         this.render();
         this.updateModalFolderSelect();
         this._setupModalClose();
-        this._updateStorageStatus();
+
+        // 自動從 Supabase 載入
+        this.loadFromCloud();
     },
 
     setDefaultData() {
@@ -572,78 +577,112 @@ const App = {
         setTimeout(() => el.classList.remove('show'), 5000);
     },
 
-    _updateStorageStatus() {
-        const el = document.getElementById('storageStatus');
-        try {
-            const saved = localStorage.getItem('inhaler_portal_data');
-            if (saved) {
-                const size = new Blob([saved]).size;
-                el.textContent = `✅ 已儲存 (${size} bytes)`;
-            } else {
-                el.textContent = '⚠️ 無儲存資料';
-            }
-        } catch(e) {
-            el.textContent = '⚠️ 儲存異常';
-        }
+    _setSyncStatus(text, type) {
+        const el = document.getElementById('syncStatus');
+        el.textContent = text;
+        el.className = 'sync-status';
+        if (type) el.classList.add(type);
     },
 
     save() {
-        try {
-            localStorage.setItem('inhaler_portal_data', JSON.stringify(this.data));
-            this._updateStorageStatus();
-        } catch(e) {
-            console.error('儲存失敗:', e);
-            this._showFixNotice('❌ 儲存失敗！可能儲存空間已滿。請使用「備份」功能匯出資料後，再點「修復」清除舊資料。');
-        }
+        localStorage.setItem('inhaler_portal_data', JSON.stringify(this.data));
     },
 
     // ============================================================
-    //  匯出 / 匯入
+    //  Supabase 同步
     // ============================================================
-    exportData() {
+    async syncToCloud() {
+        if (this._isSyncing) return;
+        this._isSyncing = true;
+
+        const syncBtn = document.getElementById('syncBtn');
+        syncBtn.classList.add('syncing');
+        syncBtn.innerHTML = '<i class="fas fa-spinner fa-spinner"></i> 同步中...';
+        this._setSyncStatus('⏳ 同步中...', 'syncing');
+
         try {
-            const dataStr = JSON.stringify(this.data, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const date = new Date().toISOString().slice(0, 10);
-            a.download = `入口備份_${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            this._showFixNotice('✅ 備份成功！檔案已下載。');
-        } catch(e) {
-            alert('匯出失敗: ' + e.message);
+            // 先查詢現有資料
+            const checkRes = await fetch(SUPABASE_URL + this._tableName + '?select=id', {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_KEY
+                }
+            });
+
+            const result = await checkRes.json();
+            let url = SUPABASE_URL + this._tableName;
+            let method = 'POST';
+
+            if (result && result.length > 0 && result[0]?.id) {
+                // 已有資料，用 PATCH 更新
+                url = SUPABASE_URL + this._tableName + '?id=eq.' + result[0].id;
+                method = 'PATCH';
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_KEY,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({ data: this.data })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errText}`);
+            }
+
+            console.log('✅ 同步成功');
+            this._setSyncStatus('✅ 已同步', 'success');
+            this._showFixNotice('✅ 資料已同步到 Supabase！');
+
+        } catch (error) {
+            console.error('❌ 同步失敗:', error);
+            this._setSyncStatus('❌ 同步失敗', 'error');
+            this._showFixNotice('❌ 同步失敗：' + error.message);
+        } finally {
+            this._isSyncing = false;
+            syncBtn.classList.remove('syncing');
+            syncBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 同步';
         }
     },
 
-    importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const imported = JSON.parse(e.target.result);
-                if (!imported.folders || typeof imported.folders !== 'object') {
-                    throw new Error('無效的備份檔案：缺少 folders');
+    async loadFromCloud() {
+        try {
+            this._setSyncStatus('⏳ 載入中...', 'syncing');
+            const response = await fetch(SUPABASE_URL + this._tableName + '?select=data', {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_KEY
                 }
-                if (!imported.uncategorized || !Array.isArray(imported.uncategorized)) {
-                    throw new Error('無效的備份檔案：缺少 uncategorized');
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.log('Supabase 尚無資料，使用本地');
+                    this._setSyncStatus('📡 無雲端資料', '');
+                    return;
                 }
-                if (!confirm('確定要還原這個備份嗎？\n目前的資料將會被覆蓋！')) return;
-                this.data = imported;
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            if (result && result.length > 0 && result[0]?.data) {
+                this.data = result[0].data;
                 this.save();
                 this.render();
                 this.updateModalFolderSelect();
-                this._showFixNotice('✅ 還原成功！已載入備份資料。');
-            } catch(err) {
-                alert('匯入失敗: ' + err.message);
+                this._setSyncStatus('✅ 已載入雲端', 'success');
+                this._showFixNotice('📥 已從 Supabase 載入最新資料');
+                console.log('✅ 從 Supabase 載入成功');
             }
-        };
-        reader.readAsText(file);
-        event.target.value = '';
+        } catch (error) {
+            console.warn('⚠️ 載入雲端失敗:', error);
+            this._setSyncStatus('⚠️ 離線模式', '');
+        }
     },
 
     // ============================================================
@@ -750,7 +789,6 @@ const App = {
         return null;
     },
 
-    // ----- 新增 -----
     addLink() {
         this._openModal('新增視窗', '請輸入名稱與網址', 'link');
     },
@@ -821,7 +859,6 @@ const App = {
         this.closeModal();
     },
 
-    // ----- 重新命名 -----
     renameItem(id, newName) {
         const found = this._findItem(id);
         if (!found) return;
@@ -861,7 +898,6 @@ const App = {
         this.render();
     },
 
-    // ----- 刪除 -----
     deleteItem(id) {
         if (!confirm('確定要刪除這個項目嗎？')) return;
         const found = this._findItem(id);
@@ -887,14 +923,12 @@ const App = {
         this.render();
     },
 
-    // ----- 開啟連結 -----
     openLink(id) {
         const found = this._findItem(id);
         if (!found) return;
         window.open(found.item.url, '_blank');
     },
 
-    // ----- 還原 -----
     resetAll() {
         if (!confirm('確定要還原為預設設定嗎？\n您所有的自訂項目將會遺失！')) return;
         this.setDefaultData();
@@ -904,17 +938,6 @@ const App = {
         this._showFixNotice('✅ 已還原為預設值');
     },
 
-    clearStorage() {
-        if (!confirm('確定要清除所有儲存資料嗎？\n這會將入口恢復為預設狀態。')) return;
-        localStorage.removeItem('inhaler_portal_data');
-        this.setDefaultData();
-        this.save();
-        this.render();
-        this.updateModalFolderSelect();
-        this._showFixNotice('✅ 已清除舊資料，恢復為預設值');
-    },
-
-    // ----- Modal 下拉選單 -----
     updateModalFolderSelect(selected) {
         const sel = document.getElementById('modalFolder');
         const current = sel.value;
@@ -929,7 +952,6 @@ const App = {
         else if (current && this.data.folders[current]) sel.value = current;
     },
 
-    // ----- Modal 關閉 -----
     _setupModalClose() {
         document.getElementById('modalOverlay').addEventListener('click', (e) => {
             if (e.target === document.getElementById('modalOverlay')) this.closeModal();
